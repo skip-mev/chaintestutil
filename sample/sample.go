@@ -16,56 +16,31 @@ import (
 	cosmosed25519 "github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
-	"github.com/cosmos/cosmos-sdk/x/authz"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
-	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
-	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
-	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
-	"github.com/cosmos/cosmos-sdk/x/feegrant"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
-	"github.com/cosmos/cosmos-sdk/x/group"
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/stretchr/testify/require"
 )
 
 // ExtraRegistries is a function passed to sample.InterfaceRegistry() where any added interface registries can be
-// registered.
+// registered. To register all interfaces for your application pass app.ModuleBasics.RegisterInterfaces as the
+// argument.
 type ExtraRegistries func(codectypes.InterfaceRegistry)
 
-func InterfaceRegistry(register ExtraRegistries) codectypes.InterfaceRegistry {
+func InterfaceRegistry(registries ...ExtraRegistries) codectypes.InterfaceRegistry {
 	interfaceRegistry := codectypes.NewInterfaceRegistry()
-
 	cryptocodec.RegisterInterfaces(interfaceRegistry)
 	authtypes.RegisterInterfaces(interfaceRegistry)
-	authz.RegisterInterfaces(interfaceRegistry)
-	stakingtypes.RegisterInterfaces(interfaceRegistry)
-	banktypes.RegisterInterfaces(interfaceRegistry)
-	consensusparamtypes.RegisterInterfaces(interfaceRegistry)
-	slashingtypes.RegisterInterfaces(interfaceRegistry)
-	upgradetypes.RegisterInterfaces(interfaceRegistry)
-	distrtypes.RegisterInterfaces(interfaceRegistry)
-	vestingtypes.RegisterInterfaces(interfaceRegistry)
-	feegrant.RegisterInterfaces(interfaceRegistry)
-	group.RegisterInterfaces(interfaceRegistry)
-	govtypes.RegisterInterfaces(interfaceRegistry)
-	evidencetypes.RegisterInterfaces(interfaceRegistry)
-	crisistypes.RegisterInterfaces(interfaceRegistry)
-	minttypes.RegisterInterfaces(interfaceRegistry)
 
-	// call extra registry function
-	register(interfaceRegistry)
+	// call extra registry functions
+	for _, registry := range registries {
+		registry(interfaceRegistry)
+	}
 
 	return interfaceRegistry
 }
 
 // Codec returns a codec with preregistered interfaces
-func Codec(register ExtraRegistries) codec.Codec {
-	return codec.NewProtoCodec(InterfaceRegistry(register))
+func Codec(registeries ...ExtraRegistries) codec.Codec {
+	return codec.NewProtoCodec(InterfaceRegistry(registeries...))
 }
 
 // Bool returns randomly true or false

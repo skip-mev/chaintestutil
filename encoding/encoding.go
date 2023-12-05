@@ -20,10 +20,10 @@ type TestEncodingConfig struct {
 }
 
 // MakeTestEncodingConfig creates a test EncodingConfig for a test configuration.
-func MakeTestEncodingConfig(register sample.ExtraRegistries) TestEncodingConfig {
+func MakeTestEncodingConfig(registries ...sample.ExtraRegistries) TestEncodingConfig {
 	amino := codec.NewLegacyAmino()
 
-	interfaceRegistry := sample.InterfaceRegistry(register)
+	interfaceRegistry := sample.InterfaceRegistry(registries...)
 	cdc := codec.NewProtoCodec(interfaceRegistry)
 	txCfg := tx.NewTxConfig(cdc, tx.DefaultSignModes)
 
