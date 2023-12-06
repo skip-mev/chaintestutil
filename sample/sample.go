@@ -27,6 +27,8 @@ type ExtraRegistries func(codectypes.InterfaceRegistry)
 
 func InterfaceRegistry(registries ...ExtraRegistries) codectypes.InterfaceRegistry {
 	interfaceRegistry := codectypes.NewInterfaceRegistry()
+
+	// always register
 	cryptocodec.RegisterInterfaces(interfaceRegistry)
 	authtypes.RegisterInterfaces(interfaceRegistry)
 
