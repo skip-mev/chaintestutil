@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	testkeeper "github.com/skip-mev/chaintestutil/keeper"
-}
+)
 
 func TestTestKeepers_MintToAccount(t *testing.T) {
 	sdkCtx, tk, _ := testkeeper.NewTestSetup(t)

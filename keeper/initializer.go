@@ -1,9 +1,10 @@
 package keeper
 
 import (
+	"maps"
+
 	tmdb "github.com/cometbft/cometbft-db"
 	"github.com/cosmos/cosmos-sdk/codec"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -24,8 +25,6 @@ import (
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/skip-mev/chaintestutil/sample"
-	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
-	"maps"
 )
 
 var moduleAccountPerms = map[string][]string{
@@ -46,13 +45,10 @@ type initializer struct {
 
 func newInitializer() initializer {
 	db := tmdb.NewMemDB()
-	addFeeMarket := func(ir codectypes.InterfaceRegistry) {
-		feemarkettypes.RegisterInterfaces(ir)
-	}
 
 	return initializer{
 		DB:         db,
-		Codec:      sample.Codec(addFeeMarket),
+		Codec:      sample.Codec(),
 		StateStore: store.NewCommitMultiStore(db),
 	}
 }
@@ -87,7 +83,7 @@ func (i *initializer) Auth(paramKeeper paramskeeper.Keeper, maccPerms map[string
 	i.StateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, i.DB)
 	paramKeeper.Subspace(authtypes.ModuleName)
 
-	maps.Copy(moduleAccountPermsmaccPerms)
+	maps.Copy(moduleAccountPerms, maccPerms)
 
 	return authkeeper.NewAccountKeeper(
 		i.Codec,
