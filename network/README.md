@@ -1,7 +1,6 @@
 # Network Testing
 
-
-Package network implements and exposes a fully operational in-process CometBFT
+The network package implements and exposes a fully operational in-process CometBFT
 test network that consists of at least one or potentially many validators. This
 test network can be used primarily for integration tests or unit test suites.
 
@@ -43,7 +42,7 @@ A typical testing flow that extends the bank genesis state might look like the f
         "github.com/stretchr/testify/require"   
         "github.com/stretchr/testify/suite"
 
-        "github.com/test-repo/app" // example test repository 		
+        "github.com/test-repo/app" // example test repository. Replace with your own 		
     )
 
     var (
