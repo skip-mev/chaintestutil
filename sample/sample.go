@@ -41,8 +41,8 @@ func InterfaceRegistry(registries ...ExtraRegistries) codectypes.InterfaceRegist
 }
 
 // Codec returns a codec with preregistered interfaces
-func Codec(registeries ...ExtraRegistries) codec.Codec {
-	return codec.NewProtoCodec(InterfaceRegistry(registeries...))
+func Codec(registries ...ExtraRegistries) codec.Codec {
+	return codec.NewProtoCodec(InterfaceRegistry(registries...))
 }
 
 // Bool returns randomly true or false

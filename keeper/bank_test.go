@@ -5,8 +5,9 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/skip-mev/chaintestutil/sample"
 	"github.com/stretchr/testify/require"
+
+	"github.com/skip-mev/chaintestutil/sample"
 
 	testkeeper "github.com/skip-mev/chaintestutil/keeper"
 )
