@@ -28,12 +28,12 @@ var (
 
 // TestKeepers holds all keepers used during keeper tests for all modules
 type TestKeepers struct {
-	T             testing.TB
-	AccountKeeper authkeeper.AccountKeeper
-	BankKeeper    bankkeeper.Keeper
-	DistrKeeper   distrkeeper.Keeper
-	StakingKeeper *stakingkeeper.Keeper
-	//FeeMarketKeeper *feemarketkeeper.Keeper
+	T              testing.TB
+	Initializer    *Initializer
+	AccountKeeper  authkeeper.AccountKeeper
+	BankKeeper     bankkeeper.Keeper
+	DistrKeeper    distrkeeper.Keeper
+	StakingKeeper  *stakingkeeper.Keeper
 	FeeGrantKeeper feegrantkeeper.Keeper
 }
 
@@ -44,32 +44,39 @@ type TestMsgServers struct {
 }
 
 // SetupOption represents an option that can be provided to NewTestSetup
-type SetupOption func(*setupOptions)
+type SetupOption func(*SetupOptions)
 
-// setupOptions represents the set of SetupOption
-type setupOptions struct{}
+// SetupOptions represents the options to configure the setup of a keeper-level integration test.
+type SetupOptions struct {
+	// AdditionalModuleAccountPerms represents any added module account permissions that need to
+	// be passed to the keeper initializer
+	AdditionalModuleAccountPerms map[string][]string
+}
+
+// WithAdditionalModuleAccounts adds additional module accounts to the testing config.
+func WithAdditionalModuleAccounts(maccPerms map[string][]string) SetupOption {
+	return func(options *SetupOptions) {
+		options.AdditionalModuleAccountPerms = maccPerms
+	}
+}
 
 // NewTestSetup returns initialized instances of all the keepers and message servers of the modules
 func NewTestSetup(t testing.TB, options ...SetupOption) (sdk.Context, TestKeepers, TestMsgServers) {
-	// setup options
-	var so setupOptions
+	// run all options before setup
+	var so SetupOptions
 	for _, option := range options {
 		option(&so)
 	}
 
-	maccPerms := make(map[string][]string)
-
 	initializer := newInitializer()
 
 	paramKeeper := initializer.Param()
-	authKeeper := initializer.Auth(paramKeeper, maccPerms)
-	bankKeeper := initializer.Bank(paramKeeper, authKeeper)
+	authKeeper := initializer.Auth(paramKeeper, so.AdditionalModuleAccountPerms)
+	bankKeeper := initializer.Bank(paramKeeper, authKeeper, so.AdditionalModuleAccountPerms)
 	stakingKeeper := initializer.Staking(authKeeper, bankKeeper, paramKeeper)
 	distrKeeper := initializer.Distribution(authKeeper, bankKeeper, stakingKeeper)
-	// feeMarketKeeper := initializer.FeeMarket(authKeeper)
 	feeGrantKeeper := initializer.FeeGrant(authKeeper)
-
-	require.NoError(t, initializer.StateStore.LoadLatestVersion())
+	require.NoError(t, initializer.LoadLatest())
 
 	// Create a context using a custom timestamp
 	ctx := sdk.NewContext(initializer.StateStore, tmproto.Header{
@@ -87,30 +94,17 @@ func NewTestSetup(t testing.TB, options ...SetupOption) (sdk.Context, TestKeeper
 		panic(err)
 	}
 
-	// err = feeMarketKeeper.SetState(ctx, feemarkettypes.DefaultState())
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// err = feeMarketKeeper.SetParams(ctx, feemarkettypes.DefaultParams())
-	// if err != nil {
-	//	panic(err)
-	// }
-
-	// initialize msg servers
-	// feeMarketMsgSrv := feemarketkeeper.NewMsgServer(*feeMarketKeeper)
-
 	return ctx,
 		TestKeepers{
-			T:             t,
-			AccountKeeper: authKeeper,
-			BankKeeper:    bankKeeper,
-			DistrKeeper:   distrKeeper,
-			StakingKeeper: stakingKeeper,
-			// FeeMarketKeeper: feeMarketKeeper,
+			T:              t,
+			Initializer:    &initializer,
+			AccountKeeper:  authKeeper,
+			BankKeeper:     bankKeeper,
+			DistrKeeper:    distrKeeper,
+			StakingKeeper:  stakingKeeper,
 			FeeGrantKeeper: feeGrantKeeper,
 		},
 		TestMsgServers{
 			T: t,
-			// FeeMarketMsgServer: feeMarketMsgSrv,
 		}
 }

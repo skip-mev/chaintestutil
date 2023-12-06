@@ -35,18 +35,18 @@ var moduleAccountPerms = map[string][]string{
 	stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 }
 
-// initializer allows to initialize each module keeper
-type initializer struct {
+// Initializer allows initializing of each module keeper.
+type Initializer struct {
 	Codec      codec.Codec
 	Amino      *codec.LegacyAmino
 	DB         *tmdb.MemDB
 	StateStore store.CommitMultiStore
 }
 
-func newInitializer() initializer {
+func newInitializer() Initializer {
 	db := tmdb.NewMemDB()
 
-	return initializer{
+	return Initializer{
 		DB:         db,
 		Codec:      sample.Codec(),
 		StateStore: store.NewCommitMultiStore(db),
@@ -63,7 +63,7 @@ func ModuleAccountAddrs(maccPerms map[string][]string) map[string]bool {
 	return modAccAddrs
 }
 
-func (i *initializer) Param() paramskeeper.Keeper {
+func (i *Initializer) Param() paramskeeper.Keeper {
 	storeKey := sdk.NewKVStoreKey(paramstypes.StoreKey)
 	tkeys := sdk.NewTransientStoreKey(paramstypes.TStoreKey)
 
@@ -78,7 +78,7 @@ func (i *initializer) Param() paramskeeper.Keeper {
 	)
 }
 
-func (i *initializer) Auth(paramKeeper paramskeeper.Keeper, maccPerms map[string][]string) authkeeper.AccountKeeper {
+func (i *Initializer) Auth(paramKeeper paramskeeper.Keeper, maccPerms map[string][]string) authkeeper.AccountKeeper {
 	storeKey := sdk.NewKVStoreKey(authtypes.StoreKey)
 	i.StateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, i.DB)
 	paramKeeper.Subspace(authtypes.ModuleName)
@@ -95,10 +95,12 @@ func (i *initializer) Auth(paramKeeper paramskeeper.Keeper, maccPerms map[string
 	)
 }
 
-func (i *initializer) Bank(paramKeeper paramskeeper.Keeper, authKeeper authkeeper.AccountKeeper) bankkeeper.Keeper {
+func (i *Initializer) Bank(paramKeeper paramskeeper.Keeper, authKeeper authkeeper.AccountKeeper, maccPerms map[string][]string) bankkeeper.Keeper {
 	storeKey := sdk.NewKVStoreKey(banktypes.StoreKey)
 	i.StateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, i.DB)
 	paramKeeper.Subspace(banktypes.ModuleName)
+
+	maps.Copy(moduleAccountPerms, maccPerms)
 	modAccAddrs := ModuleAccountAddrs(moduleAccountPerms)
 
 	return bankkeeper.NewBaseKeeper(
@@ -116,7 +118,7 @@ type ProtocolVersionSetter struct{}
 
 func (vs ProtocolVersionSetter) SetProtocolVersion(uint64) {}
 
-func (i *initializer) Upgrade() *upgradekeeper.Keeper {
+func (i *Initializer) Upgrade() *upgradekeeper.Keeper {
 	storeKey := sdk.NewKVStoreKey(upgradetypes.StoreKey)
 	i.StateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, i.DB)
 
@@ -133,7 +135,7 @@ func (i *initializer) Upgrade() *upgradekeeper.Keeper {
 	)
 }
 
-func (i *initializer) Staking(
+func (i *Initializer) Staking(
 	authKeeper authkeeper.AccountKeeper,
 	bankKeeper bankkeeper.Keeper,
 	paramKeeper paramskeeper.Keeper,
@@ -151,7 +153,7 @@ func (i *initializer) Staking(
 	)
 }
 
-func (i *initializer) Distribution(
+func (i *Initializer) Distribution(
 	authKeeper authkeeper.AccountKeeper,
 	bankKeeper bankkeeper.Keeper,
 	stakingKeeper *stakingkeeper.Keeper,
@@ -170,7 +172,7 @@ func (i *initializer) Distribution(
 	)
 }
 
-func (i *initializer) FeeGrant(
+func (i *Initializer) FeeGrant(
 	authKeeper authkeeper.AccountKeeper,
 ) feegrantkeeper.Keeper {
 	storeKey := sdk.NewKVStoreKey(feegrant.StoreKey)
@@ -181,4 +183,8 @@ func (i *initializer) FeeGrant(
 		storeKey,
 		authKeeper,
 	)
+}
+
+func (i *Initializer) LoadLatest() error {
+	return i.StateStore.LoadLatestVersion()
 }
