@@ -19,8 +19,9 @@ import (
 )
 
 type (
-	Network = network.Network
-	Config  = network.Config
+	Network    = network.Network
+	Config     = network.Config
+	ValidatorI = network.ValidatorI
 )
 
 // New creates instance with fully configured cosmos network.
