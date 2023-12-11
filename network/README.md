@@ -33,7 +33,7 @@ A typical testing flow that extends the bank genesis state might look like the f
         "github.com/cosmos/cosmos-sdk/baseapp"
         servertypes "github.com/cosmos/cosmos-sdk/server/types"
         banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-        pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
+        pruningtypes "cosmossdk.io/store/pruning/types"
         simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
         "github.com/cosmos/gogoproto/proto"
 
