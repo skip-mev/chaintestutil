@@ -5,8 +5,9 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/log"
+
 	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
-	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
@@ -70,10 +71,9 @@ func NewTestSetup(t testing.TB, options ...SetupOption) (sdk.Context, TestKeeper
 
 	initializer := newInitializer()
 
-	paramKeeper := initializer.Param()
-	authKeeper := initializer.Auth(paramKeeper, so.AdditionalModuleAccountPerms)
-	bankKeeper := initializer.Bank(paramKeeper, authKeeper, so.AdditionalModuleAccountPerms)
-	stakingKeeper := initializer.Staking(authKeeper, bankKeeper, paramKeeper)
+	authKeeper := initializer.Auth(so.AdditionalModuleAccountPerms)
+	bankKeeper := initializer.Bank(authKeeper, so.AdditionalModuleAccountPerms)
+	stakingKeeper := initializer.Staking(authKeeper, bankKeeper)
 	distrKeeper := initializer.Distribution(authKeeper, bankKeeper, stakingKeeper)
 	feeGrantKeeper := initializer.FeeGrant(authKeeper)
 	require.NoError(t, initializer.LoadLatest())
@@ -85,7 +85,7 @@ func NewTestSetup(t testing.TB, options ...SetupOption) (sdk.Context, TestKeeper
 	}, false, log.NewNopLogger())
 
 	// initialize params
-	err := distrKeeper.SetParams(ctx, distrtypes.DefaultParams())
+	err := distrKeeper.Params.Set(ctx, distrtypes.DefaultParams())
 	if err != nil {
 		panic(err)
 	}

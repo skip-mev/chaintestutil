@@ -3,13 +3,18 @@ package keeper
 import (
 	"maps"
 
+	"cosmossdk.io/log"
+	"cosmossdk.io/store/metrics"
+	"github.com/cosmos/cosmos-sdk/runtime"
+	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
+
 	"cosmossdk.io/store"
 	storetypes "cosmossdk.io/store/types"
 	"cosmossdk.io/x/feegrant"
 	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
-	tmdb "github.com/cometbft/cometbft-db"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
@@ -20,8 +25,6 @@ import (
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
-	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
@@ -40,17 +43,21 @@ var moduleAccountPerms = map[string][]string{
 type Initializer struct {
 	Codec      codec.Codec
 	Amino      *codec.LegacyAmino
-	DB         *tmdb.MemDB
+	DB         *dbm.MemDB
 	StateStore store.CommitMultiStore
+	Logger     log.Logger
 }
 
 func newInitializer() Initializer {
-	db := tmdb.NewMemDB()
+	logger := log.NewNopLogger()
+	db := dbm.NewMemDB()
+	cms := store.NewCommitMultiStore(db, logger, metrics.NewNoOpMetrics())
 
 	return Initializer{
 		DB:         db,
 		Codec:      sample.Codec(),
-		StateStore: store.NewCommitMultiStore(db),
+		StateStore: cms,
+		Logger:     logger,
 	}
 }
 
@@ -64,52 +71,39 @@ func ModuleAccountAddrs(maccPerms map[string][]string) map[string]bool {
 	return modAccAddrs
 }
 
-func (i *Initializer) Param() paramskeeper.Keeper {
-	storeKey := sdk.NewKVStoreKey(paramstypes.StoreKey)
-	tkeys := sdk.NewTransientStoreKey(paramstypes.TStoreKey)
-
+func (i *Initializer) Auth(maccPerms map[string][]string) authkeeper.AccountKeeper {
+	storeKey := storetypes.NewKVStoreKey(authtypes.StoreKey)
 	i.StateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, i.DB)
-	i.StateStore.MountStoreWithDB(tkeys, storetypes.StoreTypeTransient, i.DB)
-
-	return paramskeeper.NewKeeper(
-		i.Codec,
-		i.Amino,
-		storeKey,
-		tkeys,
-	)
-}
-
-func (i *Initializer) Auth(paramKeeper paramskeeper.Keeper, maccPerms map[string][]string) authkeeper.AccountKeeper {
-	storeKey := sdk.NewKVStoreKey(authtypes.StoreKey)
-	i.StateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, i.DB)
-	paramKeeper.Subspace(authtypes.ModuleName)
+	kvStoreService := runtime.NewKVStoreService(storeKey)
 
 	maps.Copy(moduleAccountPerms, maccPerms)
 
 	return authkeeper.NewAccountKeeper(
 		i.Codec,
-		storeKey,
+		kvStoreService,
 		authtypes.ProtoBaseAccount,
 		moduleAccountPerms,
+		authcodec.NewBech32Codec(sdk.Bech32MainPrefix),
 		sdk.Bech32PrefixAccAddr,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 }
 
-func (i *Initializer) Bank(paramKeeper paramskeeper.Keeper, authKeeper authkeeper.AccountKeeper, maccPerms map[string][]string) bankkeeper.Keeper {
-	storeKey := sdk.NewKVStoreKey(banktypes.StoreKey)
+func (i *Initializer) Bank(authKeeper authkeeper.AccountKeeper, maccPerms map[string][]string) bankkeeper.Keeper {
+	storeKey := storetypes.NewKVStoreKey(banktypes.StoreKey)
 	i.StateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, i.DB)
-	paramKeeper.Subspace(banktypes.ModuleName)
+	kvStoreService := runtime.NewKVStoreService(storeKey)
 
 	maps.Copy(moduleAccountPerms, maccPerms)
 	modAccAddrs := ModuleAccountAddrs(moduleAccountPerms)
 
 	return bankkeeper.NewBaseKeeper(
 		i.Codec,
-		storeKey,
+		kvStoreService,
 		authKeeper,
 		modAccAddrs,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		i.Logger,
 	)
 }
 
@@ -120,15 +114,16 @@ type ProtocolVersionSetter struct{}
 func (vs ProtocolVersionSetter) SetProtocolVersion(uint64) {}
 
 func (i *Initializer) Upgrade() *upgradekeeper.Keeper {
-	storeKey := sdk.NewKVStoreKey(upgradetypes.StoreKey)
+	storeKey := storetypes.NewKVStoreKey(upgradetypes.StoreKey)
 	i.StateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, i.DB)
+	kvStoreService := runtime.NewKVStoreService(storeKey)
 
 	skipUpgradeHeights := make(map[int64]bool)
 	vs := ProtocolVersionSetter{}
 
 	return upgradekeeper.NewKeeper(
 		skipUpgradeHeights,
-		storeKey,
+		kvStoreService,
 		i.Codec,
 		"",
 		vs,
@@ -139,18 +134,19 @@ func (i *Initializer) Upgrade() *upgradekeeper.Keeper {
 func (i *Initializer) Staking(
 	authKeeper authkeeper.AccountKeeper,
 	bankKeeper bankkeeper.Keeper,
-	paramKeeper paramskeeper.Keeper,
 ) *stakingkeeper.Keeper {
-	storeKey := sdk.NewKVStoreKey(stakingtypes.StoreKey)
+	storeKey := storetypes.NewKVStoreKey(stakingtypes.StoreKey)
 	i.StateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, i.DB)
-	paramKeeper.Subspace(stakingtypes.ModuleName)
+	kvStoreService := runtime.NewKVStoreService(storeKey)
 
 	return stakingkeeper.NewKeeper(
 		i.Codec,
-		storeKey,
+		kvStoreService,
 		authKeeper,
 		bankKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authcodec.NewBech32Codec(sdk.Bech32PrefixValAddr),
+		authcodec.NewBech32Codec(sdk.Bech32PrefixConsAddr),
 	)
 }
 
@@ -159,12 +155,13 @@ func (i *Initializer) Distribution(
 	bankKeeper bankkeeper.Keeper,
 	stakingKeeper *stakingkeeper.Keeper,
 ) distrkeeper.Keeper {
-	storeKey := sdk.NewKVStoreKey(distrtypes.StoreKey)
+	storeKey := storetypes.NewKVStoreKey(distrtypes.StoreKey)
 	i.StateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, i.DB)
+	kvStoreService := runtime.NewKVStoreService(storeKey)
 
 	return distrkeeper.NewKeeper(
 		i.Codec,
-		storeKey,
+		kvStoreService,
 		authKeeper,
 		bankKeeper,
 		stakingKeeper,
@@ -176,12 +173,13 @@ func (i *Initializer) Distribution(
 func (i *Initializer) FeeGrant(
 	authKeeper authkeeper.AccountKeeper,
 ) feegrantkeeper.Keeper {
-	storeKey := sdk.NewKVStoreKey(feegrant.StoreKey)
+	storeKey := storetypes.NewKVStoreKey(feegrant.StoreKey)
 	i.StateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, i.DB)
+	kvStoreService := runtime.NewKVStoreService(storeKey)
 
 	return feegrantkeeper.NewKeeper(
 		i.Codec,
-		storeKey,
+		kvStoreService,
 		authKeeper,
 	)
 }

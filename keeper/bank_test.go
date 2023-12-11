@@ -13,9 +13,8 @@ import (
 )
 
 func TestTestKeepers_MintToAccount(t *testing.T) {
-	sdkCtx, tk, _ := testkeeper.NewTestSetup(t)
+	ctx, tk, _ := testkeeper.NewTestSetup(t)
 	r := sample.Rand()
-	ctx := sdk.WrapSDKContext(sdkCtx)
 	address := sample.Address(r)
 	coins, otherCoins := sample.Coins(r), sample.Coins(r)
 
@@ -29,11 +28,11 @@ func TestTestKeepers_MintToAccount(t *testing.T) {
 	}
 
 	// should create the account
-	tk.MintToAccount(sdkCtx, address, coins)
-	require.True(t, getBalances(address).IsEqual(coins))
+	tk.MintToAccount(ctx, address, coins)
+	require.True(t, getBalances(address).Equal(coins))
 
 	// should add the minted coins in the balance
 	previousBalance := getBalances(address)
-	tk.MintToAccount(sdkCtx, address, otherCoins)
-	require.True(t, getBalances(address).IsEqual(previousBalance.Add(otherCoins...)))
+	tk.MintToAccount(ctx, address, otherCoins)
+	require.True(t, getBalances(address).Equal(previousBalance.Add(otherCoins...)))
 }
