@@ -145,7 +145,7 @@ func Delegation(t testing.TB, r *rand.Rand, addr string) stakingtypes.Delegation
 	return stakingtypes.NewDelegation(
 		delAcc,
 		ValAddress(r),
-		sdk.NewDec(int64(r.Intn(10000))),
+		sdkmath.NewLegacyDec(int64(r.Intn(10000))),
 	)
 }
 
