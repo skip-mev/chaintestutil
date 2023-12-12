@@ -6,22 +6,28 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/depinject"
 	pruningtypes "cosmossdk.io/store/pruning/types"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
+	"github.com/cosmos/cosmos-sdk/runtime"
+	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/testutil/network"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/module"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/stretchr/testify/require"
-
-	"github.com/skip-mev/chaintestutil/encoding"
 )
 
+type TestApp interface {
+	runtime.AppI
+	servertypes.Application
+}
+
 type (
-	Network    = network.Network
-	Config     = network.Config
-	ValidatorI = network.ValidatorI
+	Network        = network.Network
+	Config         = network.Config
+	ValidatorI     = network.ValidatorI
+	AppConstructor func(val ValidatorI) TestApp
 )
 
 // New creates instance with fully configured cosmos network.
@@ -35,28 +41,24 @@ func New(t *testing.T, cfg network.Config) *network.Network {
 
 // NewConfig will initialize config for the network with custom application,
 // genesis and single validator. All other parameters are inherited from cosmos-sdk/testutil/network.DefaultConfig
-func NewConfig(appConstructor network.AppConstructor, moduleBasics module.BasicManager, chainID string) network.Config {
-	encCfg := encoding.MakeTestEncodingConfig(moduleBasics.RegisterInterfaces)
-
-	return network.Config{
-		Codec:             encCfg.Codec,
-		TxConfig:          encCfg.TxConfig,
-		LegacyAmino:       encCfg.Amino,
-		InterfaceRegistry: encCfg.InterfaceRegistry,
-		AccountRetriever:  authtypes.AccountRetriever{},
-		AppConstructor:    appConstructor,
-		GenesisState:      moduleBasics.DefaultGenesis(encCfg.Codec),
-		TimeoutCommit:     2 * time.Second,
-		ChainID:           chainID,
-		NumValidators:     1,
-		BondDenom:         sdk.DefaultBondDenom,
-		MinGasPrices:      fmt.Sprintf("0.000006%s", sdk.DefaultBondDenom),
-		AccountTokens:     sdk.TokensFromConsensusPower(1000, sdk.DefaultPowerReduction),
-		StakingTokens:     sdk.TokensFromConsensusPower(500, sdk.DefaultPowerReduction),
-		BondedTokens:      sdk.TokensFromConsensusPower(100, sdk.DefaultPowerReduction),
-		PruningStrategy:   pruningtypes.PruningOptionNothing,
-		CleanupDir:        true,
-		SigningAlgo:       string(hd.Secp256k1Type),
-		KeyringOptions:    []keyring.Option{},
+func NewConfig(appConfig depinject.Config) network.Config {
+	cfg, err := network.DefaultConfigWithAppConfig(appConfig)
+	if err != nil {
+		panic(err)
 	}
+
+	cfg.AccountRetriever = authtypes.AccountRetriever{}
+	cfg.TimeoutCommit = 2 * time.Second
+	cfg.NumValidators = 1
+	cfg.BondDenom = sdk.DefaultBondDenom
+	cfg.MinGasPrices = fmt.Sprintf("0.000006%s", sdk.DefaultBondDenom)
+	cfg.AccountTokens = sdk.TokensFromConsensusPower(1000, sdk.DefaultPowerReduction)
+	cfg.StakingTokens = sdk.TokensFromConsensusPower(500, sdk.DefaultPowerReduction)
+	cfg.BondedTokens = sdk.TokensFromConsensusPower(100, sdk.DefaultPowerReduction)
+	cfg.PruningStrategy = pruningtypes.PruningOptionNothing
+	cfg.CleanupDir = true
+	cfg.SigningAlgo = string(hd.Secp256k1Type)
+	cfg.KeyringOptions = []keyring.Option{}
+
+	return cfg
 }
