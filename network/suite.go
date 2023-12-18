@@ -5,9 +5,6 @@ import (
 	"errors"
 	"testing"
 
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
 	cmthttp "github.com/cometbft/cometbft/rpc/client/http"
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	clienttx "github.com/cosmos/cosmos-sdk/client/tx"
@@ -16,6 +13,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -29,6 +29,7 @@ func init() {
 	cfg := encoding.MakeTestEncodingConfig()
 	banktypes.RegisterInterfaces(cfg.InterfaceRegistry)
 	stakingtypes.RegisterInterfaces(cfg.InterfaceRegistry)
+	distrtypes.RegisterInterfaces(cfg.InterfaceRegistry)
 
 	cdc = codec.NewProtoCodec(cfg.InterfaceRegistry)
 }
