@@ -2,33 +2,28 @@ package network
 
 import (
 	"context"
+	"github.com/skip-mev/chaintestutil/encoding"
 	"testing"
 
 	"cosmossdk.io/math"
 	cmthttp "github.com/cometbft/cometbft/rpc/client/http"
 	clienttx "github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/codec"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/testutil/network"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/skip-mev/chaintestutil/account"
 )
 
-var authCodec *codec.ProtoCodec
+var cdc *codec.ProtoCodec
 
 func init() {
-	ir := codectypes.NewInterfaceRegistry()
-
-	authtypes.RegisterInterfaces(ir)
-	cryptocodec.RegisterInterfaces(ir)
-	authCodec = codec.NewProtoCodec(ir)
+	cfg := encoding.MakeTestEncodingConfig()
+	cdc = codec.NewProtoCodec(cfg.InterfaceRegistry)
 }
 
 // TestSuite is a test suite for tests that initializes a network instance.
@@ -84,34 +79,12 @@ func (s *TestSuite) CreateValidatorTxBytes(fees sdk.Coin, gas uint64, msgs []sdk
 	return bz, err
 }
 
-func (s *TestSuite) GetAccountI(acc account.Account) (sdk.AccountI, error) {
-	cc, closeFn, err := s.GetGRPC()
-	if err != nil {
-		return nil, err
-	}
-	defer closeFn()
-
-	authClient := authtypes.NewQueryClient(cc)
-
-	resp, err := authClient.Account(context.Background(), &authtypes.QueryAccountRequest{Address: acc.Address().String()})
-	if err != nil {
-		return nil, err
-	}
-
-	var accI sdk.AccountI
-	if err := authCodec.UnpackAny(resp.Account, &accI); err != nil {
-		return nil, err
-	}
-
-	return accI, err
-}
-
 func (s *TestSuite) GetCometClient() (*cmthttp.HTTP, error) {
 	return cmthttp.New(s.Network.Validators[0].RPCAddress, "/websocket")
 }
 
-// CreateTx creates and signs a transaction, from the given messages
-func (s *TestSuite) CreateTx(ctx context.Context, acc account.Account, gasLimit, fee, timeoutHeight uint64, chainID string, msgs ...sdk.Msg) ([]byte, error) {
+// CreateTxBytes creates and signs a transaction, from the given messages.
+func (s *TestSuite) CreateTxBytes(ctx context.Context, acc account.Account, gasLimit, fee, timeoutHeight uint64, chainID string, msgs ...sdk.Msg) ([]byte, error) {
 	accI, err := s.GetAccountI(acc)
 	if err != nil {
 		return nil, err
