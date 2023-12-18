@@ -82,20 +82,36 @@ func (s *TestSuite) GetCometClient() (*cmthttp.HTTP, error) {
 	return cmthttp.New(s.Network.Validators[0].RPCAddress, "/websocket")
 }
 
+// TxGenInfo contains common info for generating transactions for tests.
+type TxGenInfo struct {
+	Account       account.Account
+	GasLimit      uint64
+	TimeoutHeight uint64
+	Fee           sdk.Coins
+	// OverrideSequence will manually set the account sequence for signing using Sequence.
+	OverrideSequence bool
+	// Sequence is the account sequence to be used if OverrideSequence is true.
+	Sequence uint64
+}
+
 // CreateTxBytes creates and signs a transaction, from the given messages.
-func (s *TestSuite) CreateTxBytes(ctx context.Context, acc account.Account, gasLimit, timeoutHeight uint64, fee sdk.Coins, msgs ...sdk.Msg) ([]byte, error) {
-	accI, err := s.GetAccountI(acc)
+func (s *TestSuite) CreateTxBytes(ctx context.Context, txGen TxGenInfo, msgs ...sdk.Msg) ([]byte, error) {
+	accI, err := s.GetAccountI(txGen.Account)
 	if err != nil {
 		return nil, err
 	}
 
 	txConfig := s.Network.Validators[0].ClientCtx.TxConfig
+	sequence := accI.GetSequence()
+	if txGen.OverrideSequence {
+		sequence = txGen.Sequence
+	}
 
 	txFactory := clienttx.Factory{}.
 		WithChainID(s.Network.Config.ChainID).
 		WithTxConfig(txConfig).
 		WithSignMode(signing.SignMode_SIGN_MODE_DIRECT).
-		WithSequence(accI.GetSequence())
+		WithSequence(sequence)
 	builder, err := txFactory.BuildUnsignedTx(msgs...)
 	if err != nil {
 		return nil, err
@@ -106,17 +122,17 @@ func (s *TestSuite) CreateTxBytes(ctx context.Context, acc account.Account, gasL
 	}
 
 	// set params
-	builder.SetGasLimit(gasLimit)
-	builder.SetFeeAmount(fee)
-	builder.SetTimeoutHeight(timeoutHeight)
+	builder.SetGasLimit(txGen.GasLimit)
+	builder.SetFeeAmount(txGen.Fee)
+	builder.SetTimeoutHeight(txGen.TimeoutHeight)
 
 	sigV2 := signing.SignatureV2{
-		PubKey: acc.PubKey(),
+		PubKey: txGen.Account.PubKey(),
 		Data: &signing.SingleSignatureData{
 			SignMode:  txFactory.SignMode(),
 			Signature: nil,
 		},
-		Sequence: accI.GetSequence(),
+		Sequence: sequence,
 	}
 
 	if err := builder.SetSignatures(sigV2); err != nil {
@@ -127,13 +143,13 @@ func (s *TestSuite) CreateTxBytes(ctx context.Context, acc account.Account, gasL
 	signerData := authsigning.SignerData{
 		ChainID:       s.Network.Config.ChainID,
 		AccountNumber: accI.GetAccountNumber(),
-		Sequence:      accI.GetSequence(),
-		PubKey:        acc.PubKey(),
+		Sequence:      sequence,
+		PubKey:        txGen.Account.PubKey(),
 	}
 
 	sigV2, err = clienttx.SignWithPrivKey(
 		ctx, signing.SignMode(txConfig.SignModeHandler().DefaultMode()), signerData,
-		builder, acc.PrivKey(), txConfig, accI.GetSequence(),
+		builder, txGen.Account.PrivKey(), txConfig, sequence,
 	)
 	if err != nil {
 		return nil, err
