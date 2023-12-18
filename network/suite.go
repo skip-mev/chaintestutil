@@ -5,7 +5,6 @@ import (
 	"github.com/skip-mev/chaintestutil/encoding"
 	"testing"
 
-	"cosmossdk.io/math"
 	cmthttp "github.com/cometbft/cometbft/rpc/client/http"
 	clienttx "github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -84,7 +83,7 @@ func (s *TestSuite) GetCometClient() (*cmthttp.HTTP, error) {
 }
 
 // CreateTxBytes creates and signs a transaction, from the given messages.
-func (s *TestSuite) CreateTxBytes(ctx context.Context, acc account.Account, gasLimit, fee, timeoutHeight uint64, chainID string, msgs ...sdk.Msg) ([]byte, error) {
+func (s *TestSuite) CreateTxBytes(ctx context.Context, acc account.Account, gasLimit, timeoutHeight uint64, fee sdk.Coins, chainID string, msgs ...sdk.Msg) ([]byte, error) {
 	accI, err := s.GetAccountI(acc)
 	if err != nil {
 		return nil, err
@@ -108,7 +107,7 @@ func (s *TestSuite) CreateTxBytes(ctx context.Context, acc account.Account, gasL
 
 	// set params
 	builder.SetGasLimit(gasLimit)
-	builder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, math.NewInt(int64(fee)))))
+	builder.SetFeeAmount(fee)
 	builder.SetTimeoutHeight(timeoutHeight)
 
 	sigV2 := signing.SignatureV2{
