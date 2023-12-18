@@ -2,10 +2,12 @@ package network
 
 import (
 	"context"
+
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+
 	"github.com/skip-mev/chaintestutil/account"
 )
 

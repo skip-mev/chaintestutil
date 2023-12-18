@@ -2,10 +2,11 @@ package network
 
 import (
 	"context"
-	"github.com/skip-mev/chaintestutil/encoding"
+	"errors"
 	"testing"
 
 	cmthttp "github.com/cometbft/cometbft/rpc/client/http"
+	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	clienttx "github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/testutil/network"
@@ -16,6 +17,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/skip-mev/chaintestutil/account"
+	"github.com/skip-mev/chaintestutil/encoding"
 )
 
 var cdc *codec.ProtoCodec
@@ -34,6 +36,7 @@ func NewSuite(t *testing.T, cfg network.Config) *TestSuite {
 	return &TestSuite{Network: New(t, cfg)}
 }
 
+// GetGRPC returns a grpc client for the first validator's node.
 func (s *TestSuite) GetGRPC() (cc *grpc.ClientConn, close func(), err error) {
 	// get grpc address
 	grpcAddr := s.Network.Validators[0].AppConfig.GRPC.Address
@@ -161,4 +164,43 @@ func (s *TestSuite) CreateTxBytes(ctx context.Context, txGen TxGenInfo, msgs ...
 
 	// return tx
 	return txConfig.TxEncoder()(builder.GetTx())
+}
+
+// BroadcastMode is a type alias for Tx broadcast modes.
+type BroadcastMode int
+
+const (
+	BroadcastModeSync BroadcastMode = iota
+	BroadcastModeAsync
+	BroadcastModeCommit
+)
+
+// BroadcastTx broadcasts the given Tx in sync or async mode and returns the result.
+func (s *TestSuite) BroadcastTx(ctx context.Context, bz []byte, mode BroadcastMode) (*coretypes.ResultBroadcastTx, error) {
+	cometClient, err := s.GetCometClient()
+	if err != nil {
+		return nil, err
+	}
+
+	var resp *coretypes.ResultBroadcastTx
+	switch mode {
+	case BroadcastModeSync:
+		resp, err = cometClient.BroadcastTxSync(ctx, bz)
+	case BroadcastModeAsync:
+		resp, err = cometClient.BroadcastTxAsync(ctx, bz)
+	default:
+		return nil, errors.New("unsupported broadcast mode")
+	}
+
+	return resp, err
+}
+
+// BroadcastTxCommit broadcasts the given Tx in commit mode and returns the result.
+func (s *TestSuite) BroadcastTxCommit(ctx context.Context, bz []byte) (*coretypes.ResultBroadcastTxCommit, error) {
+	cometClient, err := s.GetCometClient()
+	if err != nil {
+		return nil, err
+	}
+
+	return cometClient.BroadcastTxCommit(ctx, bz)
 }
