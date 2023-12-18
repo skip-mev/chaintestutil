@@ -3,6 +3,8 @@ package network
 import (
 	"context"
 	"errors"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"testing"
 
 	cmthttp "github.com/cometbft/cometbft/rpc/client/http"
@@ -24,6 +26,9 @@ var cdc *codec.ProtoCodec
 
 func init() {
 	cfg := encoding.MakeTestEncodingConfig()
+	banktypes.RegisterInterfaces(cfg.InterfaceRegistry)
+	stakingtypes.RegisterInterfaces(cfg.InterfaceRegistry)
+
 	cdc = codec.NewProtoCodec(cfg.InterfaceRegistry)
 }
 

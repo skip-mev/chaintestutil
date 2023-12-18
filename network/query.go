@@ -2,11 +2,11 @@ package network
 
 import (
 	"context"
-
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	"github.com/skip-mev/chaintestutil/account"
 )
@@ -52,4 +52,44 @@ func (s *TestSuite) GetBalances(acc account.Account) (sdk.Coins, error) {
 	}
 
 	return resp.Balances, nil
+}
+
+func (s *TestSuite) GetValidators() ([]stakingtypes.Validator, error) {
+	cc, closeFn, err := s.GetGRPC()
+	if err != nil {
+		return nil, err
+	}
+	defer closeFn()
+
+	stakingClient := stakingtypes.NewQueryClient(cc)
+
+	resp, err := stakingClient.Validators(context.Background(), &stakingtypes.QueryValidatorsRequest{
+		Status:     "",
+		Pagination: nil,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Validators, nil
+}
+
+func (s *TestSuite) GetValidatorDelegations(valAddr string) ([]stakingtypes.DelegationResponse, error) {
+	cc, closeFn, err := s.GetGRPC()
+	if err != nil {
+		return nil, err
+	}
+	defer closeFn()
+
+	stakingClient := stakingtypes.NewQueryClient(cc)
+
+	resp, err := stakingClient.ValidatorDelegations(context.Background(), &stakingtypes.QueryValidatorDelegationsRequest{
+		ValidatorAddr: valAddr,
+		Pagination:    nil,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.DelegationResponses, nil
 }
