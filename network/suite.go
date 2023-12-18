@@ -3,9 +3,10 @@ package network
 import (
 	"context"
 	"errors"
+	"testing"
+
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"testing"
 
 	cmthttp "github.com/cometbft/cometbft/rpc/client/http"
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
@@ -104,7 +105,7 @@ type TxGenInfo struct {
 
 // CreateTxBytes creates and signs a transaction, from the given messages.
 func (s *TestSuite) CreateTxBytes(ctx context.Context, txGen TxGenInfo, msgs ...sdk.Msg) ([]byte, error) {
-	accI, err := s.GetAccountI(txGen.Account)
+	accI, err := s.AccountI(txGen.Account)
 	if err != nil {
 		return nil, err
 	}
