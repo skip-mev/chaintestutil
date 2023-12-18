@@ -59,7 +59,7 @@ func (s *TestSuite) CreateValidatorTxBytes(fees sdk.Coin, gas uint64, msgs []sdk
 	}
 
 	txFactory := clienttx.Factory{}.
-		WithChainID(val.ClientCtx.ChainID).
+		WithChainID(s.Network.Config.ChainID).
 		WithKeybase(val.ClientCtx.Keyring).
 		WithTxConfig(val.ClientCtx.TxConfig).
 		WithSignMode(signing.SignMode_SIGN_MODE_DIRECT).WithFees(fees.String()).
@@ -83,7 +83,7 @@ func (s *TestSuite) GetCometClient() (*cmthttp.HTTP, error) {
 }
 
 // CreateTxBytes creates and signs a transaction, from the given messages.
-func (s *TestSuite) CreateTxBytes(ctx context.Context, acc account.Account, gasLimit, timeoutHeight uint64, fee sdk.Coins, chainID string, msgs ...sdk.Msg) ([]byte, error) {
+func (s *TestSuite) CreateTxBytes(ctx context.Context, acc account.Account, gasLimit, timeoutHeight uint64, fee sdk.Coins, msgs ...sdk.Msg) ([]byte, error) {
 	accI, err := s.GetAccountI(acc)
 	if err != nil {
 		return nil, err
@@ -92,7 +92,7 @@ func (s *TestSuite) CreateTxBytes(ctx context.Context, acc account.Account, gasL
 	txConfig := s.Network.Validators[0].ClientCtx.TxConfig
 
 	txFactory := clienttx.Factory{}.
-		WithChainID(chainID).
+		WithChainID(s.Network.Config.ChainID).
 		WithTxConfig(txConfig).
 		WithSignMode(signing.SignMode_SIGN_MODE_DIRECT).
 		WithSequence(accI.GetSequence())
@@ -125,7 +125,7 @@ func (s *TestSuite) CreateTxBytes(ctx context.Context, acc account.Account, gasL
 
 	// now actually sign
 	signerData := authsigning.SignerData{
-		ChainID:       chainID,
+		ChainID:       s.Network.Config.ChainID,
 		AccountNumber: accI.GetAccountNumber(),
 		Sequence:      accI.GetSequence(),
 		PubKey:        acc.PubKey(),
