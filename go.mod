@@ -15,8 +15,8 @@ require (
 	github.com/cosmos/cosmos-sdk v0.50.2
 	github.com/golangci/golangci-lint v1.55.3-0.20231203192459-84442f26446b
 	github.com/stretchr/testify v1.8.4
+	google.golang.org/grpc v1.60.1
 	golang.org/x/tools v0.16.1
-	google.golang.org/grpc v1.59.0
 	mvdan.cc/gofumpt v0.5.0
 )
 
