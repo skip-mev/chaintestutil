@@ -16,7 +16,7 @@ require (
 	github.com/golangci/golangci-lint v1.55.3-0.20231203192459-84442f26446b
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/tools v0.16.0
-	google.golang.org/grpc v1.59.0
+	google.golang.org/grpc v1.60.1
 	mvdan.cc/gofumpt v0.5.0
 )
 
