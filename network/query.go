@@ -2,14 +2,17 @@ package network
 
 import (
 	"context"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
 	"github.com/skip-mev/chaintestutil/account"
 )
 
-func (s *TestSuite) GetAccountI(acc account.Account) (sdk.AccountI, error) {
+func (s *TestSuite) AccountI(acc account.Account) (sdk.AccountI, error) {
 	cc, closeFn, err := s.GetGRPC()
 	if err != nil {
 		return nil, err
@@ -31,7 +34,7 @@ func (s *TestSuite) GetAccountI(acc account.Account) (sdk.AccountI, error) {
 	return accI, err
 }
 
-func (s *TestSuite) GetBalances(acc account.Account) (sdk.Coins, error) {
+func (s *TestSuite) Balances(acc account.Account) (sdk.Coins, error) {
 	cc, closeFn, err := s.GetGRPC()
 	if err != nil {
 		return nil, err
@@ -50,4 +53,58 @@ func (s *TestSuite) GetBalances(acc account.Account) (sdk.Coins, error) {
 	}
 
 	return resp.Balances, nil
+}
+
+func (s *TestSuite) AllValidators() ([]stakingtypes.Validator, error) {
+	cc, closeFn, err := s.GetGRPC()
+	if err != nil {
+		return nil, err
+	}
+	defer closeFn()
+
+	stakingClient := stakingtypes.NewQueryClient(cc)
+
+	resp, err := stakingClient.Validators(context.Background(), &stakingtypes.QueryValidatorsRequest{
+		Status:     "",
+		Pagination: nil,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Validators, nil
+}
+
+func (s *TestSuite) ValidatorDelegations(valAddr string) ([]stakingtypes.DelegationResponse, error) {
+	cc, closeFn, err := s.GetGRPC()
+	if err != nil {
+		return nil, err
+	}
+	defer closeFn()
+
+	stakingClient := stakingtypes.NewQueryClient(cc)
+
+	resp, err := stakingClient.ValidatorDelegations(context.Background(), &stakingtypes.QueryValidatorDelegationsRequest{
+		ValidatorAddr: valAddr,
+		Pagination:    nil,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.DelegationResponses, nil
+}
+
+func (s *TestSuite) ValidatorDistributionInfo(valAddr string) (*distrtypes.QueryValidatorDistributionInfoResponse, error) {
+	cc, closeFn, err := s.GetGRPC()
+	if err != nil {
+		return nil, err
+	}
+	defer closeFn()
+
+	distrClient := distrtypes.NewQueryClient(cc)
+
+	return distrClient.ValidatorDistributionInfo(context.Background(), &distrtypes.QueryValidatorDistributionInfoRequest{
+		ValidatorAddress: valAddr,
+	})
 }
