@@ -1,0 +1,14 @@
+queue_rules:
+  - name: default
+    conditions:
+      - "#approved-reviews-by>1"
+
+pull_request_rules:
+  - name: backport patches to sdk-47 branch
+    conditions:
+      - base=sdk-v50
+      - label=backport
+    actions:
+      backport:
+        branches:
+          - sdk-47
