@@ -6,7 +6,7 @@ require (
 	cosmossdk.io/depinject v1.0.0-alpha.4
 	cosmossdk.io/log v1.2.1
 	cosmossdk.io/math v1.2.0
-	cosmossdk.io/store v1.0.1
+	cosmossdk.io/store v1.0.2
 	cosmossdk.io/x/feegrant v0.1.0
 	cosmossdk.io/x/upgrade v0.1.1
 	github.com/client9/misspell v0.3.4
@@ -15,8 +15,8 @@ require (
 	github.com/cosmos/cosmos-sdk v0.50.2
 	github.com/golangci/golangci-lint v1.55.3-0.20231203192459-84442f26446b
 	github.com/stretchr/testify v1.8.4
-	google.golang.org/grpc v1.60.1
 	golang.org/x/tools v0.16.1
+	google.golang.org/grpc v1.60.1
 	mvdan.cc/gofumpt v0.5.0
 )
 
