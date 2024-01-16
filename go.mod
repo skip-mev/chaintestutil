@@ -10,13 +10,8 @@ require (
 	github.com/cosmos/cosmos-sdk v0.47.6
 	github.com/golangci/golangci-lint v1.55.3-0.20231203192459-84442f26446b
 	github.com/stretchr/testify v1.8.4
-<<<<<<< HEAD
-	golang.org/x/tools v0.16.0
-	google.golang.org/grpc v1.58.3
-=======
-	golang.org/x/tools v0.16.1
-	google.golang.org/grpc v1.59.0
->>>>>>> c8e14a4 (Bump golang.org/x/tools from 0.16.0 to 0.16.1 (#12))
+	golang.org/x/tools v0.17.0
+	google.golang.org/grpc v1.60.1
 	mvdan.cc/gofumpt v0.5.0
 )
 
@@ -272,14 +267,14 @@ require (
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
-	golang.org/x/crypto v0.16.0 // indirect
+	golang.org/x/crypto v0.18.0 // indirect
 	golang.org/x/exp v0.0.0-20230711153332-06a737ee72cb // indirect
 	golang.org/x/exp/typeparams v0.0.0-20230307190834-24139beb5833 // indirect
 	golang.org/x/mod v0.14.0 // indirect
-	golang.org/x/net v0.19.0 // indirect
-	golang.org/x/sync v0.5.0 // indirect
-	golang.org/x/sys v0.15.0 // indirect
-	golang.org/x/term v0.15.0 // indirect
+	golang.org/x/net v0.20.0 // indirect
+	golang.org/x/sync v0.6.0 // indirect
+	golang.org/x/sys v0.16.0 // indirect
+	golang.org/x/term v0.16.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/genproto v0.0.0-20231012201019-e917dd12ba7a // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20231002182017-d307bd883b97 // indirect
