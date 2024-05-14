@@ -2,6 +2,9 @@
 package sample
 
 import (
+	"cosmossdk.io/x/tx/signing"
+	"github.com/cosmos/cosmos-sdk/codec/address"
+	"github.com/cosmos/gogoproto/proto"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -26,7 +29,21 @@ import (
 type ExtraRegistries func(codectypes.InterfaceRegistry)
 
 func InterfaceRegistry(registries ...ExtraRegistries) codectypes.InterfaceRegistry {
-	interfaceRegistry := codectypes.NewInterfaceRegistry()
+	interfaceRegistry, err := codectypes.NewInterfaceRegistryWithOptions(codectypes.InterfaceRegistryOptions{
+		ProtoFiles: proto.HybridResolver,
+		SigningOptions: signing.Options{
+			AddressCodec: address.Bech32Codec{
+				Bech32Prefix: sdk.GetConfig().GetBech32AccountAddrPrefix(),
+			},
+			ValidatorAddressCodec: address.Bech32Codec{
+				Bech32Prefix: sdk.GetConfig().GetBech32ValidatorAddrPrefix(),
+			},
+		},
+	})
+
+	if err != nil {
+		panic(err)
+	}
 
 	// always register
 	cryptocodec.RegisterInterfaces(interfaceRegistry)
