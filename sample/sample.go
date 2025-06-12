@@ -11,8 +11,8 @@ import (
 	"time"
 
 	sdkmath "cosmossdk.io/math"
-	"github.com/cometbft/cometbft/crypto"
-	"github.com/cometbft/cometbft/crypto/ed25519"
+	"github.com/cometbft/cometbft/v2/crypto"
+	"github.com/cometbft/cometbft/v2/crypto/ed25519"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"

@@ -7,13 +7,13 @@ import (
 
 	"cosmossdk.io/log"
 
-	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	tmproto "github.com/cometbft/cometbft/api/cometbft/types/v2"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	feegrantkeeper "github.com/cosmos/cosmos-sdk/x/feegrant/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/stretchr/testify/require"

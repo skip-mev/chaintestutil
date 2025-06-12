@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	cmthttp "github.com/cometbft/cometbft/rpc/client/http"
-	coretypes "github.com/cometbft/cometbft/rpc/core/types"
+	cmthttp "github.com/cometbft/cometbft/v2/rpc/client/http"
+	coretypes "github.com/cometbft/cometbft/v2/rpc/core/types"
 	clienttx "github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/testutil/network"
@@ -89,7 +89,7 @@ func (s *TestSuite) CreateValidatorTxBytes(fees sdk.Coin, gas uint64, msgs []sdk
 }
 
 func (s *TestSuite) GetCometClient() (*cmthttp.HTTP, error) {
-	return cmthttp.New(s.Network.Validators[0].RPCAddress, "/websocket")
+	return cmthttp.New(s.Network.Validators[0].RPCAddress)
 }
 
 // TxGenInfo contains common info for generating transactions for tests.
