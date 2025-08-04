@@ -14,7 +14,7 @@ require (
 	github.com/cometbft/cometbft v0.38.7
 	github.com/cosmos/cosmos-db v1.0.2
 	github.com/cosmos/cosmos-sdk v0.50.6
-	github.com/cosmos/gogoproto v1.4.12
+	github.com/cosmos/gogoproto v1.7.0
 	github.com/golangci/golangci-lint v1.58.1
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d
