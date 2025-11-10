@@ -3,7 +3,7 @@ module github.com/skip-mev/chaintestutil
 go 1.23.0
 
 require (
-	cosmossdk.io/depinject v1.0.0-alpha.4
+	cosmossdk.io/depinject v1.2.1
 	cosmossdk.io/log v1.3.1
 	cosmossdk.io/math v1.3.0
 	cosmossdk.io/store v1.1.0
@@ -14,10 +14,10 @@ require (
 	github.com/cometbft/cometbft v0.38.7
 	github.com/cosmos/cosmos-db v1.0.2
 	github.com/cosmos/cosmos-sdk v0.50.6
-	github.com/cosmos/gogoproto v1.4.12
+	github.com/cosmos/gogoproto v1.7.0
 	github.com/golangci/golangci-lint v1.58.1
-	github.com/stretchr/testify v1.9.0
-	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d
+	github.com/stretchr/testify v1.10.0
+	golang.org/x/tools v0.26.0
 	google.golang.org/grpc v1.74.2
 	mvdan.cc/gofumpt v0.6.0
 )
@@ -221,7 +221,7 @@ require (
 	github.com/quasilyte/regex/syntax v0.0.0-20210819130434-b3f0c404a727 // indirect
 	github.com/quasilyte/stdinfo v0.0.0-20220114132959-f7386bf02567 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
-	github.com/rogpeppe/go-internal v1.12.0 // indirect
+	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/rs/cors v1.8.3 // indirect
 	github.com/rs/zerolog v1.32.0 // indirect
 	github.com/ryancurrah/gomodguard v1.3.2 // indirect
@@ -280,7 +280,7 @@ require (
 	golang.org/x/crypto v0.38.0 // indirect
 	golang.org/x/exp v0.0.0-20240404231335-c0f41cb1a7a0 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20240314144324-c7f7c6466f7f // indirect
-	golang.org/x/mod v0.17.0 // indirect
+	golang.org/x/mod v0.21.0 // indirect
 	golang.org/x/net v0.40.0 // indirect
 	golang.org/x/sync v0.14.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
@@ -293,7 +293,7 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	gotest.tools/v3 v3.5.1 // indirect
+	gotest.tools/v3 v3.5.2 // indirect
 	honnef.co/go/tools v0.4.7 // indirect
 	mvdan.cc/unparam v0.0.0-20240427195214-063aff900ca1 // indirect
 	nhooyr.io/websocket v1.8.6 // indirect
