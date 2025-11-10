@@ -5,19 +5,19 @@ go 1.23.0
 require (
 	cosmossdk.io/depinject v1.0.0-alpha.4
 	cosmossdk.io/log v1.3.1
-	cosmossdk.io/math v1.3.0
+	cosmossdk.io/math v1.5.0
 	cosmossdk.io/store v1.1.0
 	cosmossdk.io/x/feegrant v0.1.1
-	cosmossdk.io/x/tx v0.13.2
+	cosmossdk.io/x/tx v1.1.0
 	cosmossdk.io/x/upgrade v0.1.2
 	github.com/client9/misspell v0.3.4
 	github.com/cometbft/cometbft v0.38.7
 	github.com/cosmos/cosmos-db v1.0.2
 	github.com/cosmos/cosmos-sdk v0.50.6
-	github.com/cosmos/gogoproto v1.4.12
+	github.com/cosmos/gogoproto v1.7.0
 	github.com/golangci/golangci-lint v1.58.1
-	github.com/stretchr/testify v1.9.0
-	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d
+	github.com/stretchr/testify v1.10.0
+	golang.org/x/tools v0.29.0
 	google.golang.org/grpc v1.74.2
 	mvdan.cc/gofumpt v0.6.0
 )
@@ -25,7 +25,9 @@ require (
 require (
 	4d63.com/gocheckcompilerdirectives v1.2.1 // indirect
 	4d63.com/gochecknoglobals v0.2.1 // indirect
-	cosmossdk.io/api v0.7.4 // indirect
+	buf.build/gen/go/cometbft/cometbft/protocolbuffers/go v1.36.4-20241120201313-68e42a58b301.1 // indirect
+	buf.build/gen/go/cosmos/gogo-proto/protocolbuffers/go v1.36.4-20240130113600-88ef6483f90f.1 // indirect
+	cosmossdk.io/api v0.8.2 // indirect
 	cosmossdk.io/collections v0.4.0 // indirect
 	cosmossdk.io/core v0.11.0 // indirect
 	cosmossdk.io/errors v1.0.1 // indirect
@@ -69,6 +71,7 @@ require (
 	github.com/charithe/durationcheck v0.0.10 // indirect
 	github.com/chavacava/garif v0.1.0 // indirect
 	github.com/ckaznocha/intrange v0.1.2 // indirect
+	github.com/cockroachdb/apd/v3 v3.2.1 // indirect
 	github.com/cockroachdb/errors v1.11.1 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect
 	github.com/cockroachdb/pebble v1.1.0 // indirect
@@ -278,9 +281,9 @@ require (
 	go.uber.org/multierr v1.10.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/crypto v0.38.0 // indirect
-	golang.org/x/exp v0.0.0-20240404231335-c0f41cb1a7a0 // indirect
+	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20240314144324-c7f7c6466f7f // indirect
-	golang.org/x/mod v0.17.0 // indirect
+	golang.org/x/mod v0.22.0 // indirect
 	golang.org/x/net v0.40.0 // indirect
 	golang.org/x/sync v0.14.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
